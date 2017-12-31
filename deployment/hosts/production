@@ -1,0 +1,12 @@
+[development]
+139.59.149.223
+
+[development:vars]
+vm=0
+nickname=production
+ansible_ssh_port="{{ lookup('file', '/Users/artem/Desktop/ReactMusic/src/deployment/credentials/production/ssh_port') }}"
+ansible_ssh_user="{{ lookup('file', '/Users/artem/Desktop/ReactMusic/src/deployment/credentials/production/super_user_name') }}"
+branch=develop
+server_port=80
+server_hostname=muzicbox.net
+process_bind=127.0.0.1:8001

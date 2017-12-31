@@ -1,0 +1,164 @@
+---
+- hosts: all
+  vars:
+    project_user: "{{ lookup('file', 'credentials/' + nickname + '/project_user_name') }}"
+  vars_files:
+    - system_requirements.yml
+    - vars.yml
+  remote_user: "{ lookup('file', 'credentials/' + nickname + '/super_user_name') }}"
+  become_method: sudo
+
+  tasks:
+
+  - name: Ensure a locale exists.
+    locale_gen: name=en_US.UTF-8 state=present
+
+  - name: Fix locales
+    become: yes
+    action: command update-locale LC_ALL=en_US.UTF-8
+    when: vm == 1
+
+  - name: Set default locale
+    become: yes
+    lineinfile: dest=/etc/default/locale regexp="LC_ALL" line="LC_ALL=\"en_US.UTF-8\""
+    when: vm == 1
+
+  - name: Create project directory.
+    become: yes
+    file: state=directory path="{{ project_root }}"
+
+  - name: Add group webapps.
+    become: yes
+    group: name=webapps state=present system=yes
+
+  - name: Create project user.
+    become: yes
+    user: >
+      home="{{ project_root }}/home/" 
+      name="{{ project_user }}"
+      password="{{ lookup('file', 'credentials/' + nickname + '/project_user_password_crypted') }}"
+      state=present
+      shell="/bin/bash"
+      group="webapps"
+      system="yes"
+
+  - name: Change permissions.
+    become: yes
+    file: path="{{ project_root }}" owner="{{ project_user }}"
+
+  - name: Change permissions X2.
+    become: yes
+    file: >
+      path="{{ project_root }}"
+      group="users"
+      owner="{{ project_user }}"
+      recurse=yes
+
+  - name: Change permissions X3
+    become: yes
+    file: path="{{ project_root }}" mode="g+w" recurse=yes
+
+  - name: Create the SSH directory.
+    become: yes
+    become_user: "{{ project_user }}"
+    file: state=directory path="{{ project_root }}/home/.ssh/"
+    when: vm == 0
+    tags: 
+      - deploy
+
+  - name: Add {{ remote_host }} fingerprint to the SSH known_hosts.
+    become: yes
+    become_user: "{{ project_user }}"
+    shell: "ssh-keyscan {{ remote_host }} >> {{ project_root }}/home/.ssh/known_hosts"
+    when: vm == 0
+    tags: 
+      - deploy
+
+  - name: Upload repository SSH key.
+    become: yes
+    become_user: "{{ project_user }}"
+    copy: src="files/ssh/id_rsa" dest="{{ project_root }}/home/.ssh/id_rsa" mode="0400"
+    when: vm == 0
+    tags: 
+      - deploy
+
+  - name: Create project directories.
+    become: yes
+    become_user: "{{ project_user }}"
+    file: >
+      state=directory
+      path="{{ project_root }}/{{ item }}"
+    with_items:
+      - ""
+      - "code"
+      - "conf"
+      - "www/static"
+      - "www/media"
+      - "logs"
+
+  - name: Add redis server repo
+    become: yes
+    apt_repository: repo='ppa:chris-lea/redis-server'
+    tags: 
+      - database
+
+  - name: Update server packages.
+    apt: update_cache=yes cache_valid_time=3600
+    become: yes
+
+  - name: Install required system packages.
+    become: yes
+    apt: pkg={{ item }} state=present update-cache=yes
+    with_items: "{{ system_packages }}"
+
+  - name: Fix supervisor for Ubuntu 16.04.
+    become: yes
+    systemd:
+      state: started
+      enabled: yes
+      name: supervisor
+    when: ansible_distribution == 'Ubuntu' and ansible_distribution_version == '16.04'
+    tags:
+      - supervisor
+
+  - name: Ensure postgresql is at the latest version
+    become: yes
+    apt: name=postgresql state=latest
+    tags: 
+      - database 
+
+  - name: Ensure that postgresql is started
+    become: yes
+    service: name=postgresql state=started
+    tags: 
+      - database 
+
+  - name: Create database user.
+    become: yes
+    become_user: postgres
+    postgresql_user: >
+      name="{{ project_database_user }}"
+      password="{{ lookup('password', 'credentials/' + nickname + '/postgres_password length=20') }}"
+    tags: 
+      - database 
+
+  - name: Create database.
+    become: yes
+    become_user: postgres
+    postgresql_db: >
+      owner="{{ project_database_user }}"
+      name="{{ project_database }}"
+      encoding='UTF-8' 
+      lc_collate='en_US.UTF-8' 
+      lc_ctype='en_US.UTF-8' 
+      template='template0'
+    tags: 
+      - database
+
+  - name: Disable default nginx server block.
+    become: yes
+    file: path=/etc/nginx/sites-enabled/default state=absent
+    notify: restart nginx
+
+  handlers:
+    - include: handlers.yml

@@ -1,0 +1,7 @@
+project_group: webapps
+project_name: reactmusic
+remote_host: bitbucket.org
+project_database: db_music
+project_root: /var/webapps/reactmusic
+project_repo: git@bitbucket.org:Artem_Bernatskyy/react-music.git
+project_database_user: db_music_user

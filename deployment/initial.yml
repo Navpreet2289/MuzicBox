@@ -1,0 +1,52 @@
+---
+- hosts: all
+  gather_facts: no
+  vars_files:
+    - vars.yml
+  remote_user: root
+  pre_tasks:
+    - name: "FIX: Ubuntu 16.04 LTS doesn't come with certain modules, required by ansible"
+      raw: apt-get install python-minimal aptitude -y
+      become: true
+      become_method: sudo
+
+  tasks:
+  - name: Create superuser.
+    become: yes
+    user: >
+      name="{{ lookup('file', 'credentials/' + nickname + '/super_user_name') }}" 
+      password="{{ lookup('file', 'credentials/' + nickname + '/super_user_password_crypted') }}" state=present
+      groups="sudo"
+      shell="/bin/bash"
+
+  - name: Superuser bash_profile file update.
+    become: yes
+    template: >
+      src="files/conf/bash_profile.j2" 
+      dest="/home/{{ lookup('file', 'credentials/' + nickname + '/super_user_name') }}/.profile" 
+      backup=yes 
+      owner={{ lookup('file', 'credentials/' + nickname + '/super_user_name') }} 
+      group={{ lookup('file', 'credentials/' + nickname + '/super_user_name') }} 
+      mode=0644
+
+  - name: Add authorized key.
+    become: yes
+    authorized_key: >
+      user="{{ lookup('file', 'credentials/' + nickname + '/super_user_name') }}" 
+      key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+  - name: SSH configuration file update.
+    become: yes
+    template: >
+      src="files/conf/sshd_config.j2" 
+      dest="/etc/ssh/sshd_config" 
+      backup=yes 
+      owner=0 
+      group=0 
+      mode=0644
+    notify: restart ssh
+
+
+  handlers:
+
+    - include: handlers.yml

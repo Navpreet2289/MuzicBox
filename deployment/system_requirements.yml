@@ -1,0 +1,27 @@
+system_packages:
+  - build-essential
+  - nginx
+  - mc
+  - git
+  - htop
+  - gettext
+  - libffi-dev
+  - libjpeg-dev
+  - libpq-dev
+  - libproj-dev
+  - libxml2
+  - libxslt1-dev
+  - postgresql
+  - postgresql-contrib
+  - python-dev
+  - python-pip
+  - python-psycopg2
+  - python-software-properties
+  - python-virtualenv
+  - python3-dev
+  - python3-pip
+  - redis-server
+  - supervisor
+  - openjpeg-tools
+  - tcl
+  - tree

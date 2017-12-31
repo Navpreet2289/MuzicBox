@@ -1,0 +1,21 @@
+{
+  "extends": [ "eslint:recommended", "plugin:react/recommended" ],
+  "env": {
+    "node": true,
+    "browser": true,
+  },
+  "parserOptions": {
+      "ecmaVersion": 6,
+      "ecmaFeatures": {
+          "jsx": true,
+          "spread": true,
+          "experimentalObjectRestSpread": true
+      },
+      "sourceType": "module"
+  },
+  "parser": "babel-eslint",
+  "plugins": [ "react" ],
+  "rules": {
+    "react/prop-types": 0
+  }
+}

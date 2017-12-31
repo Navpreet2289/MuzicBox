@@ -1,0 +1,22 @@
+DEBUG = False
+
+SECRET_KEY = '2jr1!w*@q+ajwhAd_0zj1%(=ak2^fvte4w-gwPlzgnd1%c(r2+'
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': '{{ project_database }}',
+        'USER': '{{ project_database_user }}',
+        'PASSWORD': '{{ lookup('password', 'credentials/' + nickname + '/postgres_password length=20') }}',
+        'HOST': '127.0.0.1',
+    }
+}
+
+ALLOWED_HOSTS = ['{{ server_hostname }}']
+
+LAST_FM_KEY = '9c389938d6bdc87fe8281496e72ea905'
+
+
+SOCIAL_AUTH_FACEBOOK_KEY = '414207582263848'  # App ID
+SOCIAL_AUTH_FACEBOOK_SECRET = 'a9c16819586592d45d12566a39fd7d4f'  # App Secret

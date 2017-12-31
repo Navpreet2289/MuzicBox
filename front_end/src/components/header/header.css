@@ -1,0 +1,124 @@
+/* ----------------------------- */
+
+/*# HEADER STYLES */
+
+/* -------------------------------*/
+
+.header {
+  position: absolute;
+  top: 0;
+  display: flex;
+  padding-right: 24px;
+  padding-left: 24px;
+  width: 100%;
+  height: 42px;
+  background-color: #282828;
+  color: #fff;
+  z-index: 1400;
+}
+
+.header__wrapper {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.logo-container {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}
+
+.logo {
+  display: flex;
+  flex-flow: row nowrap;
+  max-height: 42px;
+  height: 42px;
+}
+
+.logo__icon {
+  height: 38px;
+  padding-top: 2px;
+  cursor: pointer;
+  align-self: center;
+  user-select: none;
+}
+
+.logo__icon:hover {
+  opacity: 0.8;
+}
+
+.auth {
+  align-self: center;
+  display: none;
+}
+
+.auth__links-container {
+  display: inline-flex;
+}
+
+.auth--white-link {
+  align-self: center;
+  color: #fff;
+  font-size: 16px;
+  font-family: "Roboto", sans-serif;
+}
+
+.auth--transition {
+  transition: all 0.45s cubic-bezier(0.23, 1, 0.32, 1) 0ms;
+}
+
+.auth__link {
+  text-decoration: none;
+}
+
+.auth-links__divider {
+  color: #fff;
+  margin-right: 12px;
+  margin-left: 12px;
+}
+
+.sidebar {
+  padding: 5px;
+  align-self: center;
+  cursor: pointer;
+}
+
+.sidebar__icon {
+  font-size: 19px;
+}
+
+/* media queries*/
+
+@media (min-width: 415px) {
+  .logo-container {
+    justify-content: flex-start;
+  }
+
+  .logo__icon {
+    margin-left: 19px;
+  }
+}
+
+@media (min-width: 768px) {
+  .header {
+    padding-left: 12px;
+  }
+
+  .auth {
+    display: flex;
+  }
+}
+
+@media (min-width: 992px) {
+  .sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 992px) {
+  .app__left {
+    display: none;
+  }
+}

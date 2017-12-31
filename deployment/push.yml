@@ -1,0 +1,43 @@
+---
+- hosts: all
+  gather_facts: no
+  vars:
+    project_user: "{{ lookup('file', 'credentials/' + nickname + '/project_user_name') }}"
+  vars_files:
+    - vars.yml
+  remote_user: "{ lookup('file', 'credentials/' + nickname + '/super_user_name') }}"
+  become_method: sudo
+
+  tasks:
+
+  - name: Pull sources from repository.
+    become: yes
+    become_user: "{{ project_user }}"
+    git: repo="{{ project_repo }}" dest="{{ project_root }}/code/" version="{{ branch }}" force=yes update=yes
+    notify: supervisorctrl restart program
+    when: vm == 0
+
+  - name: Install python requirements.
+    become: yes
+    become_user: "{{ project_user }}"
+    pip: requirements="{{ project_root }}/code/requirements.txt" virtualenv="{{ project_root }}/env/"
+    notify: supervisorctrl restart program
+
+  - name: Sync Django database.
+    become: yes
+    become_user: "{{ project_user }}"
+    shell: "{{ project_root }}/env/bin/python {{ project_root }}/code/manage.py migrate"
+
+  - name: Collect static files.
+    become: yes
+    become_user: "{{ project_user }}"
+    shell: "{{ project_root }}/env/bin/python {{ project_root }}/code/manage.py collectstatic --clear --noinput"
+
+  - name: Ensure services running
+    service: name={{ item }} state=started
+    with_items:
+      - nginx
+      - supervisor
+
+  handlers:
+    - include: handlers.yml

@@ -1,0 +1,19 @@
+---
+- hosts: all
+  vars_files:
+    - vars.yml
+  gather_facts: no
+  remote_user: "{{ lookup('file', 'credentials/' + nickname + '/super_user_name') }}"
+  become_method: sudo
+
+  tasks:
+  - name: Update server packages.
+    become: yes
+    apt: update_cache=yes cache_valid_time=3600
+
+  - name: Upgrade server packages.
+    become: yes
+    apt: upgrade=full
+
+  handlers:
+    - include: handlers.yml
